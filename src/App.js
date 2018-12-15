@@ -348,6 +348,9 @@ class App extends React.Component {
         onMouseDown   ={this.handleMouseDown}
         onMouseUp     ={this.handleMouseUp}
         onMouseMove   ={this.handleMouseMove}
+        onTouchStart  ={this.handleMouseDown}
+        onTouchEnd    ={this.handleMouseUp}
+        onTouchMove   ={this.handleMouseMove}
       >
         <Ball
           value       ={this.state.ballLoc}
