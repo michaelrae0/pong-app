@@ -5,9 +5,7 @@ import Paddles from './Paddles.js';
 import Ball from './Ball.js';
 import Score from './Score.js';
 
-let clientWidth   = document.documentElement.clientWidth,
-    clientHeight   = document.documentElement.clientHeight,
-    viewWidth     = 840,
+let viewWidth     = 840,
     viewHeight    = 600,
     paddleDims    = { height: 20, width: 2 },
     ballDims      = { height: 3, width: 3 },
@@ -17,16 +15,22 @@ class App extends React.Component {
   constructor(props) {
     super(props);
 
+    let initDeg = 115 - Math.random() * 65;
+    let ballVel = {
+      x: Math.sin(Math.PI/180 * initDeg) * 1.8,
+      y: Math.cos(Math.PI/180 * initDeg) * 1.8,
+    }
+
     this.state = {
-      playerLoc: {x: 3, y: 50 - paddleDims.height/2}, 
-      enemyLoc: {x: 134, y: 50 - paddleDims.height/2},
+      playerLoc: {x: 2, y: 50 - paddleDims.height/2}, 
+      enemyLoc: {x: 136, y: 50 - paddleDims.height/2},
       ballLoc: { 
         x: 70 - ballDims.height/2, 
         y: 50 - ballDims.width/2 
       },
 
       playerV: 0,
-      ballVel: { x: -1.8, y: 0 },
+      ballVel,
 
       score: { playerS: 0, enemyS: 0 },
       lastHit: "",
@@ -77,7 +81,11 @@ class App extends React.Component {
     if (initialBallLoc.x <= 0 || initialBallLoc.x + ballDims.width >= 140) {
       nextBallLoc.x = 70 - ballDims.height/2; 
       nextBallLoc.y = 50 - ballDims.width/2;
-      nextBallVel = { x: 1, y: 0 };
+      let initDeg = 120 - Math.random() * 60;
+      nextBallVel = {
+        x: Math.sin(Math.PI/180 * initDeg) * 1.8,
+        y: Math.cos(Math.PI/180 * initDeg) * 1.8,
+      }
       let playerS = this.state.score.playerS,
           enemyS  = this.state.score.enemyS
       if (initialBallLoc.x <= 0) {
