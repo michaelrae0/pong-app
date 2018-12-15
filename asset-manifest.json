@@ -1,7 +1,7 @@
 {
   "main.css": "/pong-app/static/css/main.731db0ef.chunk.css",
-  "main.js": "/pong-app/static/js/main.22e17804.chunk.js",
-  "main.js.map": "/pong-app/static/js/main.22e17804.chunk.js.map",
+  "main.js": "/pong-app/static/js/main.38832820.chunk.js",
+  "main.js.map": "/pong-app/static/js/main.38832820.chunk.js.map",
   "static/js/1.d2e548de.chunk.js": "/pong-app/static/js/1.d2e548de.chunk.js",
   "static/js/1.d2e548de.chunk.js.map": "/pong-app/static/js/1.d2e548de.chunk.js.map",
   "runtime~main.js": "/pong-app/static/js/runtime~main.a434f306.js",
@@ -9,6 +9,6 @@
   "static/media/index.css": "/pong-app/static/media/digital_counter_7.52a6484f.ttf",
   "static/css/main.731db0ef.chunk.css.map": "/pong-app/static/css/main.731db0ef.chunk.css.map",
   "index.html": "/pong-app/index.html",
-  "precache-manifest.f2e6adbde48dc8a2551c4dcadaab9d23.js": "/pong-app/precache-manifest.f2e6adbde48dc8a2551c4dcadaab9d23.js",
+  "precache-manifest.1888c5659b97f1713297cc03da42ca29.js": "/pong-app/precache-manifest.1888c5659b97f1713297cc03da42ca29.js",
   "service-worker.js": "/pong-app/service-worker.js"
 }
