@@ -5,6 +5,8 @@ import Ball from './Ball.js';
 import Score from './Score.js';
 import onClickOutside from "react-onclickoutside";
 
+// Player is the left paddle, Enemy is the right paddle
+
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -51,6 +53,7 @@ class App extends React.Component {
       lastHit:      "",
       wallHit:      "",
       isMouseDown:  false,
+      selectedPlayer: "",
       // Screen/object dimensions
       viewWidth,
       viewHeight,
@@ -83,6 +86,7 @@ class App extends React.Component {
 
         ballCenter        = this.state.ballLoc.y + ballDims.height/2, 
         enemyCenter       = initialEnemyLoc.y + paddleDims.height/2,
+        playerCenter      = initialPlayerLoc.y + paddleDims.height/2,
 
         // For ball/paddle collision calcs
         deltaY            = paddleDims.height + ballDims.height,
@@ -95,11 +99,13 @@ class App extends React.Component {
         deltaX            = maxX - 100, // linear scale
         vo                = 0.7;
 
+    // Enemy moves if not selected
     if (
       ballCenter - enemyCenter < -1  && // Enemy up if ball is above
       initialBallLoc.x >= initX &&
-      this.state.lastHit !== "enemy")
-    { 
+      this.state.lastHit !== "enemy" &&
+      this.state.selectedPlayer !== "enemy"
+    ) { 
       if (ballCenter - enemyCenter < -3) {
         nextEnemyLoc.y -= (initialBallLoc.x - initX) * (deltaV / deltaX) + vo;
       }
@@ -110,8 +116,9 @@ class App extends React.Component {
     else if (
       ballCenter - enemyCenter > 1  && // Enemy down if ball is below
       initialBallLoc.x >= initX &&
-      this.state.lastHit !== "enemy")
-    { 
+      this.state.lastHit !== "enemy" &&
+      this.state.selectedPlayer !== "enemy"
+    ) { 
       if (ballCenter - enemyCenter > 3) {
         nextEnemyLoc.y += (initialBallLoc.x - initX) * (deltaV / deltaX) + vo;
       }
@@ -120,10 +127,38 @@ class App extends React.Component {
       }
     } 
 
+    // Player moves if not selected
+    if (
+      ballCenter - playerCenter < -1  && // Player up if ball is above
+      initialBallLoc.x <= initX &&
+      this.state.lastHit !== "player" &&
+      this.state.selectedPlayer !== "player"
+    ) { 
+      if (ballCenter - playerCenter < -3) {
+        nextPlayerLoc.y -= (initX - initialBallLoc.x) * (deltaV / deltaX) + vo;
+      }
+      else { // To prevent stuttering
+        nextPlayerLoc.y -= 0.4;
+      }
+    }
+    else if (
+      ballCenter - playerCenter > 1  && // Player down if ball is below
+      initialBallLoc.x <= initX &&
+      this.state.lastHit !== "player" &&
+      this.state.selectedPlayer !== "player"
+    ) { 
+      if (ballCenter - playerCenter > 3) {
+        nextPlayerLoc.y += (initX - initialBallLoc.x) * (deltaV / deltaX) + vo;
+      }
+      else { // To prePlayervent stuttering
+        nextPlayerLoc.y += 0.4;
+      }
+    } 
+
     // Paddle/wall collision test
     if (nextPlayerLoc.y < 0.5) {
       nextPlayerLoc.y = 0.5;
-    } else if (nextPlayerLoc.y > 99.5 - paddleDims.height) { // Change
+    } else if (nextPlayerLoc.y > 99.5 - paddleDims.height) { 
       nextPlayerLoc.y = 99.5 - paddleDims.height;
     }
     if (nextEnemyLoc.y < 0.5) {
@@ -249,64 +284,70 @@ class App extends React.Component {
     clearInterval(this.intervalId);
   }
 
-  handleKeyDown = event => {
-    if ((event.keyCode === 38) || (event.key === "w")) {
-      this.setState({
-        playerV: -1
-      })
-    } else if ((event.keyCode === 40) || (event.key === "s")) {
-      this.setState({
-        playerV: 1
-      })
-    }
-  }
-  handleKeyUp = event => {
-    if ((event.keyCode === 38) || (event.key === "w")) {
-      this.setState({
-        playerV: 0
-      })
-    } else if ((event.keyCode === 40) || (event.key === "s")) {
-      this.setState({
-        playerV: 0
-      })
-    }
-  }
-
   handleMouseDown = event => {
     if (
-      event.clientY >= this.state.viewTop + this.state.playerLoc.y * this.state.dR &&
-      event.clientY <= this.state.viewTop + (this.state.playerLoc.y + this.state.paddleDims.height) * this.state.dR &&
-      event.clientX >= this.state.viewLeft + (this.state.playerLoc.x - 2) * this.state.dR &&
-      event.clientX <= this.state.viewLeft + (this.state.playerLoc.x + this.state.paddleDims.width + 1.5) * this.state.dR
+      event.clientY >= this.state.viewTop + this.state.playerLoc.y * this.state.dR &&                                   // top
+      event.clientY <= this.state.viewTop + (this.state.playerLoc.y + this.state.paddleDims.height) * this.state.dR &&  // bottom
+      event.clientX >= this.state.viewLeft + (this.state.playerLoc.x - 2) * this.state.dR &&                            // left
+      event.clientX <= this.state.viewLeft + (this.state.playerLoc.x + this.state.paddleDims.width + 2) * this.state.dR // right
     ) {
-      console.log('mousedown')
       this.setState({
-        isMouseDown: true
+        isMouseDown: true,
+        selectedPlayer: "player"
       })
+    }
+    else if (
+      event.clientY >= this.state.viewTop + this.state.enemyLoc.y * this.state.dR &&                                    // top
+      event.clientY <= this.state.viewTop + (this.state.enemyLoc.y + this.state.paddleDims.height) * this.state.dR &&   // bottom
+      event.clientX >= this.state.viewLeft + (this.state.enemyLoc.x - 2) * this.state.dR &&                             // left
+      event.clientX <= this.state.viewLeft + (this.state.enemyLoc.x + this.state.paddleDims.width + 2) * this.state.dR  // right
+    ) {
+      this.setState({
+        isMouseDown: true,
+        selectedPlayer: "enemy"
+      })
+      
     }
   }
   handleMouseUp = event => {
-    console.log('mouseup')
     this.setState({
-      isMouseDown: false
+      isMouseDown: false,
+      selectedPlayer: ""
     })
   }
   handleMouseMove = event => {
-    
     if (this.state.isMouseDown === true) {
+       if (this.state.selectedPlayer === "player") { 
+        let paddleTopToMiddle = this.state.paddleDims.height / 2 * this.state.dR,
+            click = event.clientY - paddleTopToMiddle,
+            clickOnBoard = (click - this.state.viewTop) / this.state.dR
+        // Stop wall collision
+        if (clickOnBoard < 0.5) {
+          clickOnBoard = 0.5;
+        } else if (clickOnBoard > 99.5 - this.state.paddleDims.height) { 
+          clickOnBoard = 99.5 - this.state.paddleDims.height;
+        }
+        this.setState({
+          playerLoc: { 
+            x: 2,
+            y: clickOnBoard
+          } 
+        })
+      }
+    }
+    if (this.state.selectedPlayer === "enemy") { 
       let paddleTopToMiddle = this.state.paddleDims.height / 2 * this.state.dR,
           click = event.clientY - paddleTopToMiddle,
           clickOnBoard = (click - this.state.viewTop) / this.state.dR
-      
-      if (clickOnBoard < 0.5) {
+      // Stop wall collision
+      if (clickOnBoard < 0.5) { 
         clickOnBoard = 0.5;
       } else if (clickOnBoard > 99.5 - this.state.paddleDims.height) { 
         clickOnBoard = 99.5 - this.state.paddleDims.height;
       }
-
       this.setState({
-        playerLoc: { 
-          x: 2,
+        enemyLoc: { 
+          x: this.state.maxX- this.state.paddleDims.width - 2,
           y: clickOnBoard
         } 
       })
@@ -352,6 +393,7 @@ class App extends React.Component {
           value       ={this.state.enemyLoc}
           itemprop    ={this.state.paddleDims}
           index       ={this.state.dR}
+          span        ={this.state.viewTop}
         />
         <Score 
           value       ={this.state.score} 
