@@ -1,0 +1,50 @@
+@font-face{
+  font-family:'digital';
+  src: url('digital_counter_7.ttf');
+ }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: white
+}
+
+.viewport {
+  background-color: black;
+  position: absolute;
+}
+.paddle {
+  background-color: white;
+  position: relative;
+  margin: 0 -10px;
+  float: left;
+  border-radius: 4px
+}
+.ball {
+  background-color: white;
+  position: relative;
+  margin: 0 -15px;
+  float: left;
+  border-radius: 10px;
+}
+.board-num {
+  position: absolute;
+  color: white;
+  font-size: 80px;
+  font-family: 'digital';
+  float: left;
+  width: 84px;
+}
+.one {
+  left: 200px;
+}
+.two {
+  left: 600px;
+}
+/* Prevents blue line around div when clicked on */
+*:focus {
+  outline: 0;
+  outline: none;
+}
