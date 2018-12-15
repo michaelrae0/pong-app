@@ -8,7 +8,6 @@ import onClickOutside from "react-onclickoutside";
 class App extends React.Component {
   constructor(props) {
     super(props);
-
     let clientWidth   = document.documentElement.clientWidth,
         clientHeight  = document.documentElement.clientHeight,
         viewWidth     = 840,
@@ -27,6 +26,15 @@ class App extends React.Component {
                         x: Math.sin(Math.PI/180 * initDeg) * 1.8,
                         y: Math.cos(Math.PI/180 * initDeg) * 1.8
         };
+    if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+      viewWidth     = 336;
+      viewHeight    = 240;
+      viewLeft      = (clientWidth  - viewWidth) / 2;
+      viewTop       = (clientHeight - viewHeight) / 2;
+      dR            = viewHeight/100;
+      paddleDims    = { height: 20, width: 3};
+      ballDims      = { height: 3, width: 3};
+    }
 
     this.state = {
       playerLoc:    {x: 2, y: 50 - paddleDims.height/2}, 
@@ -78,12 +86,12 @@ class App extends React.Component {
 
         // For ball/paddle collision calcs
         deltaY            = paddleDims.height + ballDims.height,
-        deltaDeg          = 100,
+        deltaDeg          = 140,
         offsetDeg         = (180 - deltaDeg) / 2 + 5
 
     // Enemy's center will move towards the ball's center
     let initX             = maxX * 0.5, // where velocity changes start
-        deltaV            = 0.5,        // maximum add to initialEnemyLoc
+        deltaV            = 0.8,        // maximum add to initialEnemyLoc
         deltaX            = maxX - 100, // linear scale
         vo                = 0.7;
 
@@ -158,8 +166,8 @@ class App extends React.Component {
       let reboundDeg = collisionLoc * (deltaDeg / deltaY) + offsetDeg;
       let reboundPI = reboundDeg* Math.PI / 180
 
-      nextBallVel.x = Math.sin(reboundPI) * 1.8;
-      nextBallVel.y = -Math.cos(reboundPI) * 1.8;
+      nextBallVel.x = Math.sin(reboundPI) * 2.2;
+      nextBallVel.y = -Math.cos(reboundPI) * 2.2;
       nextBallLoc = {
         x: initialBallLoc.x + nextBallVel.x,
         y: initialBallLoc.y + nextBallVel.y
@@ -268,8 +276,8 @@ class App extends React.Component {
     if (
       event.clientY >= this.state.viewTop + this.state.playerLoc.y * this.state.dR &&
       event.clientY <= this.state.viewTop + (this.state.playerLoc.y + this.state.paddleDims.height) * this.state.dR &&
-      event.clientX >= this.state.viewLeft + (this.state.playerLoc.x - 1) * this.state.dR &&
-      event.clientX <= this.state.viewLeft + (this.state.playerLoc.x + this.state.paddleDims.width + 1) * this.state.dR
+      event.clientX >= this.state.viewLeft + (this.state.playerLoc.x - 2) * this.state.dR &&
+      event.clientX <= this.state.viewLeft + (this.state.playerLoc.x + this.state.paddleDims.width + 1.5) * this.state.dR
     ) {
       console.log('mousedown')
       this.setState({
@@ -306,38 +314,11 @@ class App extends React.Component {
     event.stopPropagation()
     event.preventDefault()
   }
-  handleClickOutside = event => {
-    if (this.state.isMouseDown === true) {
-      let paddleTopToMiddle = this.state.paddleDims.height / 2 * this.state.dR,
-          click = event.clientY - paddleTopToMiddle,
-          clickOnBoard = (click - this.state.viewTop) / this.state.dR
-      
-      if (clickOnBoard < 0.5) {
-        clickOnBoard = 0.5;
-      } else if (clickOnBoard > 99.5 - this.state.paddleDims.height) { 
-        clickOnBoard = 99.5 - this.state.paddleDims.height;
-      }
-
-      this.setState({
-        playerLoc: { 
-          x: 2,
-          y: clickOnBoard
-        } 
-      })
-    }
-    event.stopPropagation()
-    event.preventDefault()
-  };
 
   render() {
-
-    // if (this.state.isMouseDown === true) this.handleMouseMove();
-
     return (
       <div
-        className     ="viewport"
-        onKeyDown     ={this.handleKeyDown}
-        onKeyUp       ={this.handleKeyUp}
+        className     ="viewport lock-screen"
         tabIndex      ="0"
         style         ={{
                         width: this.state.viewWidth,
@@ -345,6 +326,8 @@ class App extends React.Component {
                         top: this.state.viewTop,
                         left: this.state.viewLeft
         }}
+        onKeyDown     ={this.handleKeyDown}
+        onKeyUp       ={this.handleKeyUp}
         onMouseDown   ={this.handleMouseDown}
         onMouseUp     ={this.handleMouseUp}
         onMouseMove   ={this.handleMouseMove}
