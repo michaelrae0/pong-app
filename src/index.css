@@ -8,9 +8,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: white
+  background: white;
 }
-
 .viewport {
   background-color: black;
   position: absolute;
@@ -20,7 +19,8 @@ body {
   position: relative;
   margin: 0 -10px;
   float: left;
-  border-radius: 4px
+  border-radius: 4px;
+  /* z-index:1000 */
 }
 .ball {
   background-color: white;

@@ -14,7 +14,7 @@ class Score extends React.Component {
           {this.props.value.playerS}
         </div>
         <div
-          key="score1"
+          key="score2"
           className="board-num two"
           style={{
             left: 105 * this.props.index - 21 + 'px'
