@@ -5,40 +5,55 @@ import Paddles from './Paddles.js';
 import Ball from './Ball.js';
 import Score from './Score.js';
 
-let viewWidth     = 840,
-    viewHeight    = 600,
-    paddleDims    = { height: 20, width: 2 },
-    ballDims      = { height: 3, width: 3 },
-    dR            = viewHeight/100;
-
 class App extends React.Component {
   constructor(props) {
     super(props);
 
-    let initDeg = 115 - Math.random() * 65;
-    let ballVel = {
-      x: Math.sin(Math.PI/180 * initDeg) * 1.8,
-      y: Math.cos(Math.PI/180 * initDeg) * 1.8,
-    }
+    let viewWidth = 840,
+    viewHeight    = 600,
+    paddleDims    = { height: 16, width: 1.5 },
+    ballDims      = { height: 2, width: 2 },
+    dR            = viewHeight / 100;
+
+    let initDeg   = 115 - Math.random() * 65,
+        ballVel   = {
+                    x: Math.sin(Math.PI/180 * initDeg) * 1.8,
+                    y: Math.cos(Math.PI/180 * initDeg) * 1.8
+        },
+        maxX       = 140;
 
     this.state = {
-      playerLoc: {x: 2, y: 50 - paddleDims.height/2}, 
-      enemyLoc: {x: 136, y: 50 - paddleDims.height/2},
-      ballLoc: { 
-        x: 70 - ballDims.height/2, 
-        y: 50 - ballDims.width/2 
-      },
+      playerLoc:    {x: 2, y: 50 - paddleDims.height/2}, 
+      enemyLoc:     {x: maxX- paddleDims.width - 2, y: 50 - paddleDims.height/2},
+      ballLoc:      { 
+                      x: maxX/2 - ballDims.height/2, 
+                      y: 50 - ballDims.width/2 
+                    },
 
-      playerV: 0,
+      playerV:      0,
       ballVel,
 
-      score: { playerS: 0, enemyS: 0 },
-      lastHit: "",
-      isMouseDown: false
+      score:        { playerS: 0, enemyS: 0 },
+      lastHit:      "",
+      wallHit: "",
+      isMouseDown:  false,
+      // Screen/object dimensions
+      viewWidth:    viewWidth,
+      viewHeight:   viewHeight,
+      maxX,
+
+      paddleDims:   paddleDims,
+      ballDims:     ballDims,
+      dR:           dR
     }
   }
 
   nextFrame = () => {
+    const maxX            = this.state.maxX,
+
+          paddleDims      = this.state.paddleDims,
+          ballDims        = this.state.ballDims;
+
     let initialPlayerLoc  = this.state.playerLoc,
         nextPlayerLoc     = { x: initialPlayerLoc.x, y: initialPlayerLoc.y + this.state.playerV },
 
@@ -53,27 +68,56 @@ class App extends React.Component {
         ballCenter        = this.state.ballLoc.y + ballDims.height/2, 
         enemyCenter       = initialEnemyLoc.y + paddleDims.height/2,
 
+        // For ball/paddle collision calcs
         deltaY            = paddleDims.height + ballDims.height,
-        deltaDeg          = 80,
-        offsetDeg         = (180 - deltaDeg) / 2
+        deltaDeg          = 90,
+        offsetDeg         = (180 - deltaDeg) / 2 + 5
 
     // Enemy's center will move towards the ball's center
-    if (ballCenter - enemyCenter < -2) { // Enemy up if ball is above
-      nextEnemyLoc.y -= 0.8;
-    } else if (ballCenter - enemyCenter > 2) { // Enemy down if ball is below
-      nextEnemyLoc.y += 0.8;
+    let initX             = maxX * 0.4, // where velocity changes start
+        deltaV            = 0.5,        // maximum add to initialEnemyLoc
+        deltaX            = maxX - 100, // linear scale
+        vo                = 0.8;
+
+    // if (
+    //   ballCenter - enemyCenter < -2 &&  // Enemy up if ball is above
+    //   initialBallLoc.x < initX/2 &&
+    //   this.state.lastHit !== "enemy")
+    // { 
+    //   nextEnemyLoc.y -= vo;
+    // }
+    // else if (
+    //   ballCenter - enemyCenter > 2 && // Enemy down if ball is below
+    //   initialBallLoc.x < initX/2 &&
+    //   this.state.lastHit !== "enemy")
+    // {
+    //   nextEnemyLoc.y += vo;
+    // }
+    if (
+      ballCenter - enemyCenter < -3  && // Enemy up fast if ball is above
+      initialBallLoc.x >= initX &&
+      this.state.lastHit !== "enemy")
+    { 
+      nextEnemyLoc.y -= (initialBallLoc.x - initX) * (deltaV / deltaX) + vo;
+    }
+    else if (
+      ballCenter - enemyCenter > 3  && // Enemy down fast if ball is below
+      initialBallLoc.x >= initX &&
+      this.state.lastHit !== "enemy")
+    { 
+      nextEnemyLoc.y += (initialBallLoc.x - initX) * (deltaV / deltaX) + vo;
     } 
 
     // Paddle/wall collision test
-    if (nextPlayerLoc.y < 0) {
-      nextPlayerLoc.y = 0;
-    } else if (nextPlayerLoc.y > 100 - paddleDims.height) { // Change
-      nextPlayerLoc.y = 100 - paddleDims.height;
+    if (nextPlayerLoc.y < 0.5) {
+      nextPlayerLoc.y = 0.5;
+    } else if (nextPlayerLoc.y > 99.5 - paddleDims.height) { // Change
+      nextPlayerLoc.y = 99.5 - paddleDims.height;
     }
-    if (nextEnemyLoc.y < 0) {
-      nextEnemyLoc.y = 0;
-    } else if (nextEnemyLoc.y > 100 - paddleDims.height) {
-      nextEnemyLoc.y = 100 - paddleDims.height;
+    if (nextEnemyLoc.y < 0.5) {
+      nextEnemyLoc.y = 0.5;
+    } else if (nextEnemyLoc.y > 99.5 - paddleDims.height) {
+      nextEnemyLoc.y = 99.5 - paddleDims.height;
     }
 
     // Ball collision test
@@ -101,7 +145,7 @@ class App extends React.Component {
     else if ( // Ball hits player
       this.state.lastHit !== "player" &&
       initialBallLoc.x <= initialPlayerLoc.x + paddleDims.width &&  // Ball left, paddle right
-      initialBallLoc.x >= initialPlayerLoc.x &&                     // Ball left, paddle left
+      initialBallLoc.x >= initialPlayerLoc.x - 0.5 &&                     // Ball left, paddle left
       initialBallLoc.y + ballDims.height >= initialPlayerLoc.y &&   // Ball bottom, paddle top
       initialBallLoc.y <= initialPlayerLoc.y + paddleDims.height    // Ball top, paddle bottom
       ) {
@@ -117,7 +161,8 @@ class App extends React.Component {
         y: initialBallLoc.y + nextBallVel.y
       };
       this.setState({
-        lastHit: "player"
+        lastHit: "player",
+        wallHit: ""
       })
     } 
     else if ( // Ball hits enemy
@@ -138,10 +183,14 @@ class App extends React.Component {
           y: initialBallLoc.y + nextBallVel.y
         };
         this.setState({
-          lastHit: "enemy"
+          lastHit: "enemy",
+          wallHit: ""
         })
     }  // Ball hits top/bottom wall
-    else if (initialBallLoc.y <= 0 || initialBallLoc.y >= 100-ballDims.height) { 
+    else if (
+      initialBallLoc.y <= 0 && this.state.wallHit !== "top" || 
+      initialBallLoc.y >= 100 - ballDims.height && this.state.wallHit !== "bottom"
+      ) { 
       nextBallVel = {
         x: initialBallVel.x,
         y: -initialBallVel.y
@@ -150,6 +199,16 @@ class App extends React.Component {
         x: initialBallLoc.x + nextBallVel.x,
         y: initialBallLoc.y + nextBallVel.y
       };
+      // Fixes a glitch where the ball hits a paddle and wall at the same time
+      if (initialBallLoc.y <= 0) {
+        this.setState({
+          wallHit: "top"
+        });
+      } else {
+        this.setState({
+          wallHit: "bottom"
+        })
+      }
     }
     else { // Ball hits nothing
       nextBallVel = initialBallVel;
@@ -220,39 +279,39 @@ class App extends React.Component {
   render() {
     let clientWidth   = document.documentElement.clientWidth,
         clientHeight  = document.documentElement.clientHeight,
-        top           = (clientHeight - viewHeight) / 2,
-        left          = (clientWidth  - viewWidth) / 2;
+        top           = (clientHeight - this.state.viewHeight) / 2,
+        left          = (clientWidth  - this.state.viewWidth) / 2;
 
     return (
       <div
-        className="viewport"
-        onKeyDown={this.handleKeyDown}
-        onKeyUp={this.handleKeyUp}
-        tabIndex="0"
-        style={{
-          width: viewWidth,
-          height: viewHeight,
-          top,
-          left
-        }}
+        className     ="viewport"
+        onKeyDown     ={this.handleKeyDown}
+        onKeyUp       ={this.handleKeyUp}
+        tabIndex      ="0"
+        style         ={{
+                        width: this.state.viewWidth,
+                        height: this.state.viewHeight,
+                        top,
+                        left
+                        }}
       >
         <Ball
-          value={this.state.ballLoc}
-          itemprop={ballDims}
-          index={dR}
+          value       ={this.state.ballLoc}
+          itemprop    ={this.state.ballDims}
+          index       ={this.state.dR}
         />
         <Paddles
-          value={this.state.playerLoc}
-          span={this.state.enemyLoc}
-          itemprop={paddleDims}
-          index={dR}
-          onmousedown={this.handleMouseDown}
-          onmouseup={this.handleMouseUp}
-          onmousemove={this.handleMouseMove}
+          value       ={this.state.playerLoc}
+          span        ={this.state.enemyLoc}
+          itemprop    ={this.state.paddleDims}
+          index       ={this.state.dR}
+          onmousedown ={this.handleMouseDown}
+          onmouseup   ={this.handleMouseUp}
+          onmousemove ={this.handleMouseMove}
         />
         <Score 
-          value={this.state.score} 
-          index={dR}
+          value       ={this.state.score} 
+          index       ={this.state.dR}
         />
       </div>
     );

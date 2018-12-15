@@ -27,7 +27,7 @@ body {
   position: relative;
   margin: 0 -15px;
   float: left;
-  border-radius: 10px;
+  border-radius: 5px;
 }
 .board-num {
   position: absolute;
