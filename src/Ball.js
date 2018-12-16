@@ -7,10 +7,10 @@ class Ball extends React.Component {
       key="2"
       className="ball"
       style={{
-        left: this.props.value.x * this.props.index + 15 + 'px',
-        top: this.props.value.y * this.props.index + 'px',
-        width: this.props.itemprop.width * this.props.index + 'px',
-        height: this.props.itemprop.height * this.props.index + 'px'
+        left: this.props.loc.x * this.props.dR + 15 + 'px',
+        top: this.props.loc.y * this.props.dR + 'px',
+        width: this.props.dims.width * this.props.dR + 'px',
+        height: this.props.dims.height * this.props.dR + 'px'
       }}
       >
       </div>
