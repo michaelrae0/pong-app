@@ -10,11 +10,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background: white;
 }
-.lock-screen {
+.container {
   height: 100%;
-  overflow: hidden;
   width: 100%;
   position: fixed;
+  margin-left: -8px;
+  margin-top: -8px
 }
 .viewport {
   background-color: black;

@@ -3,13 +3,11 @@ import './index.css';
 import Paddle from './Paddle.js';
 import Ball from './Ball.js';
 import Score from './Score.js';
-import onClickOutside from "react-onclickoutside";
-
-// Player is the left paddle, Enemy is the right paddle
 
 class App extends React.Component {
   constructor(props) {
     super(props);
+    // Used for setting state variable
     let clientWidth   = document.documentElement.clientWidth,
         clientHeight  = document.documentElement.clientHeight,
         viewWidth     = 840,
@@ -21,24 +19,19 @@ class App extends React.Component {
         ballDims      = { height: 2, width: 2 },
 
         dR            = viewHeight / 100,
-        maxX          = 140,
-
-        initDeg       = 115 - Math.random() * 65,
-        ballVel       = {
-                        x: Math.sin(Math.PI/180 * initDeg) * 1.8,
-                        y: Math.cos(Math.PI/180 * initDeg) * 1.8
-        };
-    if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
-      viewWidth     = 336;
-      viewHeight    = 240;
-      viewLeft      = (clientWidth  - viewWidth) / 2;
-      viewTop       = (clientHeight - viewHeight) / 2;
-      dR            = viewHeight/100;
-      paddleDims    = { height: 20, width: 3};
-      ballDims      = { height: 3, width: 3};
-    }
+        maxX          = 140;
+    // if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+    //   viewWidth     = 336;
+    //   viewHeight    = 240;
+    //   viewLeft      = (clientWidth  - viewWidth) / 2;
+    //   viewTop       = (clientHeight - viewHeight) / 2;
+    //   dR            = viewHeight/100;
+    //   this.state.paddleDims    = { height: 20, width: 3};
+    //   ballDims      = { height: 3, width: 3};
+    // }
 
     this.state = {
+      // Player is the left paddle, Enemy is the right paddle
       playerLoc:    {x: 2, y: 50 - paddleDims.height/2}, 
       enemyLoc:     {x: maxX- paddleDims.width - 2, y: 50 - paddleDims.height/2},
       ballLoc:      { 
@@ -47,7 +40,7 @@ class App extends React.Component {
                     },
 
       playerV:      0,
-      ballVel,
+      ballVel:      this.randomBallDir(115 - Math.random() * 65),
 
       score:        { playerS: 0, enemyS: 0 },
       lastHit:      "",
@@ -66,188 +59,114 @@ class App extends React.Component {
       dR
     }
   }
-
+  randomBallDir = initDeg => {
+    return {
+      x: Math.sin(Math.PI/180 * initDeg) * 1.8,
+      y: Math.cos(Math.PI/180 * initDeg) * 1.8,
+    }
+  }
   nextFrame = () => {
-    const maxX            = this.state.maxX,
+    let autoLocation = (relLoc, paddleStr, initPadLoc) => {
+      let initX   = this.state.maxX * 0.5,  // Where v starts to change
+          deltaV  = 0.8,        // maximum add to this.state.enemyLoc
+          deltaX  = this.state.maxX - 100, // linear scale
+          vo      = 0.7,
+          paddleCenter = initPadLoc.y + this.state.paddleDims.height/2,
+          ballCenter        = this.state.ballLoc.y + this.state.ballDims.height/2;
 
-          paddleDims      = this.state.paddleDims,
-          ballDims        = this.state.ballDims;
 
-    let initialPlayerLoc  = this.state.playerLoc,
-        nextPlayerLoc     = { x: initialPlayerLoc.x, y: initialPlayerLoc.y + this.state.playerV },
-
-        initialEnemyLoc   = { x:this.state.enemyLoc.x, y:this.state.enemyLoc.y},
-        nextEnemyLoc      = initialEnemyLoc, 
-
-        initialBallLoc    = {x: this.state.ballLoc.x, y: this.state.ballLoc.y},
-        nextBallLoc       = {x: 0, y: 0},
-        initialBallVel    = {x: this.state.ballVel.x, y: this.state.ballVel.y},
-        nextBallVel       = {x: initialBallVel.x, y: initialBallVel.y},
-
-        ballCenter        = this.state.ballLoc.y + ballDims.height/2, 
-        enemyCenter       = initialEnemyLoc.y + paddleDims.height/2,
-        playerCenter      = initialPlayerLoc.y + paddleDims.height/2,
-
-        // For ball/paddle collision calcs
-        deltaY            = paddleDims.height + ballDims.height,
-        deltaDeg          = 140,
-        offsetDeg         = (180 - deltaDeg) / 2 + 5
-
-    // Enemy's center will move towards the ball's center
-    let initX             = maxX * 0.5, // where velocity changes start
-        deltaV            = 0.8,        // maximum add to initialEnemyLoc
-        deltaX            = maxX - 100, // linear scale
-        vo                = 0.7;
-
-    // Enemy moves if not selected
-    if (
-      ballCenter - enemyCenter < -1  && // Enemy up if ball is above
-      initialBallLoc.x >= initX &&
-      this.state.lastHit !== "enemy" &&
-      this.state.selectedPlayer !== "enemy"
-    ) { 
-      if (ballCenter - enemyCenter < -3) {
-        nextEnemyLoc.y -= (initialBallLoc.x - initX) * (deltaV / deltaX) + vo;
+      if (this.state.lastHit !== paddleStr && this.state.selectedPlayer !== paddleStr) {
+        if (ballCenter - paddleCenter < -1) { // Ball above paddle
+          if (paddleStr === "enemy" && this.state.ballLoc.x >= initX) {
+            if (ballCenter - paddleCenter < -3) { // Speed up
+              initPadLoc.y -= (relLoc) * (deltaV / deltaX) + vo;
+            }
+            else { // To prevent stuttering
+              initPadLoc.y -= 0.4;
+            }
+          } else if (paddleStr === "player" && this.state.ballLoc.x <= initX) {
+            if (ballCenter - paddleCenter < -3) { // Speed up
+              initPadLoc.y -= (relLoc) * (deltaV / deltaX) + vo;
+            }
+            else { // To prevent stuttering
+              initPadLoc.y -= 0.4;
+            }
+          }
+        }
+        else if (ballCenter - paddleCenter > 1) { // Ball below paddle
+          if (paddleStr === "enemy" && this.state.ballLoc.x >= initX) {
+            if (ballCenter - paddleCenter > 3) { // Speed up
+              initPadLoc.y += (relLoc) * (deltaV / deltaX) + vo;
+            }
+            else { // To prevent stuttering
+              initPadLoc.y += 0.4;
+          }
+          } else if (paddleStr === "player" && this.state.ballLoc.x <= initX) {
+            if (ballCenter - paddleCenter > 3) { // Speed up
+              initPadLoc.y += (relLoc) * (deltaV / deltaX) + vo;
+            }
+            else { // To prevent stuttering
+              initPadLoc.y += 0.4;
+            }
+          }
+        }
       }
-      else { // To prevent stuttering
-        nextEnemyLoc.y -= 0.4;
-      }
+      return initPadLoc;
     }
-    else if (
-      ballCenter - enemyCenter > 1  && // Enemy down if ball is below
-      initialBallLoc.x >= initX &&
-      this.state.lastHit !== "enemy" &&
-      this.state.selectedPlayer !== "enemy"
-    ) { 
-      if (ballCenter - enemyCenter > 3) {
-        nextEnemyLoc.y += (initialBallLoc.x - initX) * (deltaV / deltaX) + vo;
-      }
-      else { // To prevent stuttering
-        nextEnemyLoc.y += 0.4;
-      }
-    } 
-
-    // Player moves if not selected
-    if (
-      ballCenter - playerCenter < -1  && // Player up if ball is above
-      initialBallLoc.x <= initX &&
-      this.state.lastHit !== "player" &&
-      this.state.selectedPlayer !== "player"
-    ) { 
-      if (ballCenter - playerCenter < -3) {
-        nextPlayerLoc.y -= (initX - initialBallLoc.x) * (deltaV / deltaX) + vo;
-      }
-      else { // To prevent stuttering
-        nextPlayerLoc.y -= 0.4;
-      }
+    let wallCollisionTest = nextY => {
+      if (nextY < 0.5)  return 0.5;
+      else if (nextY > 99.5 - this.state.paddleDims.height) return 99.5 - this.state.paddleDims.height;
+      else return nextY;
     }
-    else if (
-      ballCenter - playerCenter > 1  && // Player down if ball is below
-      initialBallLoc.x <= initX &&
-      this.state.lastHit !== "player" &&
-      this.state.selectedPlayer !== "player"
-    ) { 
-      if (ballCenter - playerCenter > 3) {
-        nextPlayerLoc.y += (initX - initialBallLoc.x) * (deltaV / deltaX) + vo;
-      }
-      else { // To prePlayervent stuttering
-        nextPlayerLoc.y += 0.4;
-      }
-    } 
+    let ballPaddleCollision = (paddleStr, initPadLoc) => {
+      let deltaY        = this.state.paddleDims.height + this.state.ballDims.height,
+          deltaDeg      = 120, // Ball can shoot at a max angle of 70 deg from either side
+          offsetDeg     = (180 - deltaDeg) / 2 + 5, 
 
-    // Paddle/wall collision test
-    if (nextPlayerLoc.y < 0.5) {
-      nextPlayerLoc.y = 0.5;
-    } else if (nextPlayerLoc.y > 99.5 - paddleDims.height) { 
-      nextPlayerLoc.y = 99.5 - paddleDims.height;
-    }
-    if (nextEnemyLoc.y < 0.5) {
-      nextEnemyLoc.y = 0.5;
-    } else if (nextEnemyLoc.y > 99.5 - paddleDims.height) {
-      nextEnemyLoc.y = 99.5 - paddleDims.height;
-    }
+          ballCenter    = this.state.ballLoc.y + this.state.ballDims.height/2,
+          collisionLoc  = ballCenter - initPadLoc.y + this.state.ballDims.height/2,                // Determines rebound angle
+          reboundDeg    = collisionLoc * (deltaDeg / deltaY) + offsetDeg, // Measured clockwise
+          reboundPI     = reboundDeg* Math.PI / 180,                      // radians
+          totalSpeed    = 2.2,                                            // hypotenuse speed
+          
+          nextVX        = 0,
+          nextVY        = 0;
 
-    // Ball collision test
-    // Ball hits left or right wall (Score!)
-    if (initialBallLoc.x <= 0 || initialBallLoc.x + ballDims.width >= 140) {
-      nextBallLoc.x = 70 - ballDims.height/2; 
-      nextBallLoc.y = 50 - ballDims.width/2;
-      let initDeg = 120 - Math.random() * 60;
-      nextBallVel = {
-        x: Math.sin(Math.PI/180 * initDeg) * 1.8,
-        y: Math.cos(Math.PI/180 * initDeg) * 1.8,
+      if (paddleStr === "enemy") {
+        nextVX = -Math.sin(reboundPI) * totalSpeed;
       }
-      let playerS = this.state.score.playerS,
-          enemyS  = this.state.score.enemyS
-      if (initialBallLoc.x <= 0) {
-        enemyS++;
-      } else {
-        playerS++
+      else                        {
+        nextVX = Math.sin(reboundPI) * totalSpeed;
       }
-      this.setState({
-        lastHit: "",
-        score: { playerS, enemyS }
-      })
-    }
-    else if ( // Ball hits player
-      this.state.lastHit !== "player" &&
-      initialBallLoc.x <= initialPlayerLoc.x + paddleDims.width &&  // Ball left, paddle right
-      initialBallLoc.x >= initialPlayerLoc.x - 0.5 &&                     // Ball left, paddle left
-      initialBallLoc.y + ballDims.height >= initialPlayerLoc.y &&   // Ball bottom, paddle top
-      initialBallLoc.y <= initialPlayerLoc.y + paddleDims.height    // Ball top, paddle bottom
-      ) {
-
-      let collisionLoc = ballCenter - initialPlayerLoc.y;
-      let reboundDeg = collisionLoc * (deltaDeg / deltaY) + offsetDeg;
-      let reboundPI = reboundDeg* Math.PI / 180
-
-      nextBallVel.x = Math.sin(reboundPI) * 2.2;
-      nextBallVel.y = -Math.cos(reboundPI) * 2.2;
-      nextBallLoc = {
-        x: initialBallLoc.x + nextBallVel.x,
-        y: initialBallLoc.y + nextBallVel.y
+      // Add a little rng to stop the autobots from hitting it back and forth forever
+      nextVY = -Math.cos(reboundPI) * totalSpeed + (Math.random() - 0.5);
+      
+      let newLoc = {
+        x: this.state.ballLoc.x + nextVX,
+        y: this.state.ballLoc.y + nextVY
       };
       this.setState({
-        lastHit: "player",
+        ballVel: { x: nextVX, y: nextVY },
+        ballLoc: newLoc,
+        lastHit: paddleStr,
         wallHit: ""
       })
-    } 
-    else if ( // Ball hits enemy
-      this.state.lastHit !== "enemy" &&
-      initialBallLoc.x + ballDims.width >= initialEnemyLoc.x &&     // Ball right, paddle left
-      initialBallLoc.x <= initialEnemyLoc.x + paddleDims.width &&   // Ball left, paddle right
-      initialBallLoc.y + ballDims.height >= initialEnemyLoc.y &&    // Ball bottom, paddle top
-      initialBallLoc.y <= initialEnemyLoc.y + paddleDims.height     // Ball top, paddle bottom
-      ) {
-        let collisionLoc = ballCenter - initialEnemyLoc.y;
-        let reboundDeg = collisionLoc * (deltaDeg / deltaY) + offsetDeg;
-        let reboundPI = reboundDeg * Math.PI / 180
-  
-        nextBallVel.x = -Math.sin(reboundPI) * 1.8;
-        nextBallVel.y = -Math.cos(reboundPI) * 1.8;
-        nextBallLoc = {
-          x: initialBallLoc.x + nextBallVel.x,
-          y: initialBallLoc.y + nextBallVel.y
-        };
-        this.setState({
-          lastHit: "enemy",
-          wallHit: ""
-        })
-    }  // Ball hits top/bottom wall
-    else if (
-      (initialBallLoc.y <= 0 && this.state.wallHit !== "top") || 
-      (initialBallLoc.y >= 100 - ballDims.height && this.state.wallHit !== "bottom")
-      ) { 
-      nextBallVel = {
-        x: initialBallVel.x,
-        y: -initialBallVel.y
+    }
+    let ballWallCollision = () => {    
+      let nextBallVel = {
+        x: this.state.ballVel.x,
+        y: -this.state.ballVel.y
       }
-      nextBallLoc = {
-        x: initialBallLoc.x + nextBallVel.x,
-        y: initialBallLoc.y + nextBallVel.y
-      };
+      let nextBallLoc = {
+        x: this.state.ballLoc.x + this.state.ballVel.x,
+        y: this.state.ballLoc.y + this.state.ballVel.y
+      }
+      this.setState({
+        ballVel: nextBallVel,
+        ballLoc: nextBallLoc
+      })
       // Fixes a glitch where the ball hits a paddle and wall at the same time
-      if (initialBallLoc.y <= 0) {
+      if (this.state.ballLoc.y <= 0) {
         this.setState({
           wallHit: "top"
         });
@@ -257,21 +176,102 @@ class App extends React.Component {
         })
       }
     }
-    else { // Ball hits nothing
-      nextBallVel = initialBallVel;
-      nextBallLoc = {
-        x: initialBallLoc.x + nextBallVel.x,
-        y: initialBallLoc.y + nextBallVel.y
-      };
+    let ballNoCollision = () => {
+      let nextBallVel = {
+        x: this.state.ballVel.x,
+        y: this.state.ballVel.y
+      }
+      let nextBallLoc = {
+        x: this.state.ballLoc.x + this.state.ballVel.x,
+        y: this.state.ballLoc.y + this.state.ballVel.y
+      }
+      this.setState({
+        ballVel: nextBallVel,
+        ballLoc: nextBallLoc
+      })
+    }
+    let newBall = () => {
+      let nextBallLoc = {
+        x: this.state.maxX/2 - this.state.ballDims.height/2,
+        y: 50 - this.state.ballDims.width/2
+      },
+        initDeg = 140 - Math.random() * 60,
+        nextBallVel = this.randomBallDir(initDeg);
+      this.setState({
+        ballVel: nextBallVel,
+        ballLoc: nextBallLoc
+      });
+    }
+    let newScore = () => {
+      let playerS = this.state.score.playerS,
+          enemyS  = this.state.score.enemyS;
+      if (this.state.ballLoc.x <= 0) {
+        enemyS++;
+      } else {
+        playerS++
+      }
+      this.setState({
+        lastHit: "",
+        score: { playerS, enemyS }
+      })
     }
 
+    let paddleMovement = () => {
+      // Paddles moves if not currently selected with the mouse. AI!
+      let nextEnemyLoc = autoLocation(relEnemyLoc, "enemy", this.state.enemyLoc),
+      nextPlayerLoc = autoLocation(relPlayerLoc, "player", this.state.playerLoc);
+      // Paddle/wall collision with a little padding
+      nextEnemyLoc.y = wallCollisionTest(nextEnemyLoc.y);
+      nextPlayerLoc.y = wallCollisionTest(nextPlayerLoc.y);
+      this.setState({
+        playerLoc: nextPlayerLoc,
+        enemyLoc: nextEnemyLoc,
+      })
+    }
+    let ballMovement = () => {
+      // Ball hits left or right wall (Score!)
+      if (this.state.ballLoc.x <= 0 || this.state.ballLoc.x + this.state.ballDims.width >= 140) {
+        newScore();
+        newBall();
+      }
+      else if ( // Ball hits player
+        this.state.lastHit !== "player" &&
+        this.state.ballLoc.x <= this.state.playerLoc.x + this.state.paddleDims.width &&  // Ball left, paddle right
+        this.state.ballLoc.x >= this.state.playerLoc.x - 1 &&                     // Ball left, paddle left
+        this.state.ballLoc.y + this.state.ballDims.height >= this.state.playerLoc.y &&   // Ball bottom, paddle top
+        this.state.ballLoc.y <= this.state.playerLoc.y + this.state.paddleDims.height    // Ball top, paddle bottom
+      ) {
+        ballPaddleCollision("player", this.state.playerLoc);
+      } 
+      else if ( // Ball hits enemy
+        this.state.lastHit !== "enemy" &&
+        this.state.ballLoc.x + this.state.ballDims.width >= this.state.enemyLoc.x &&     // Ball right, paddle left
+        this.state.ballLoc.x <= this.state.enemyLoc.x + this.state.paddleDims.width + 1 &&   // Ball left, paddle right
+        this.state.ballLoc.y + this.state.ballDims.height >= this.state.enemyLoc.y &&    // Ball bottom, paddle top
+        this.state.ballLoc.y <= this.state.enemyLoc.y + this.state.paddleDims.height     // Ball top, paddle bottom
+      ) {
+        ballPaddleCollision("enemy", this.state.enemyLoc)
+      }  // Ball hits top/bottom wall
+      else if (
+        (this.state.ballLoc.y <= 0 && this.state.wallHit !== "top") || 
+        (this.state.ballLoc.y >= 100 - this.state.ballDims.height && this.state.wallHit !== "bottom")
+        ) { 
+        ballWallCollision();
+      }
+      else { // Ball hits nothing
+        ballNoCollision();
+      }
+    } 
+
+    const initX         = this.state.maxX * 0.5,                   // When the ball passes this, the balls become autonomous
+          relEnemyLoc   = this.state.ballLoc.x - initX, // The relative locations of the balls from initx
+          relPlayerLoc  = initX - this.state.ballLoc.x
+
+    paddleMovement();
+    ballMovement();
 
     this.setState({
-      playerLoc: nextPlayerLoc,
-      enemyLoc: nextEnemyLoc,
-      ballLoc: nextBallLoc,
-      ballVel: nextBallVel,
-      // Update player if screen changed size
+      // Update for mouse calculations if screen changed size
       viewTop: (document.documentElement.clientHeight - this.state.viewHeight) / 2,
       viewLeft: (document.documentElement.clientWidth - this.state.viewWidth) / 2
     })
@@ -367,8 +367,6 @@ class App extends React.Component {
                         top: this.state.viewTop,
                         left: this.state.viewLeft
         }}
-        onKeyDown     ={this.handleKeyDown}
-        onKeyUp       ={this.handleKeyUp}
         onMouseDown   ={this.handleMouseDown}
         onMouseUp     ={this.handleMouseUp}
         onMouseMove   ={this.handleMouseMove}
@@ -404,4 +402,4 @@ class App extends React.Component {
   }
 }
 
-export default onClickOutside(App);
+export default App;
