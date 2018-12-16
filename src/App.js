@@ -44,7 +44,7 @@ class App extends React.Component {
       wallHit:      "",
       isMouseDown:  false,
       selectedPlayer: "",
-      // Player dimensions
+      // viewport dimensions
       viewTop: (document.documentElement.clientHeight - this.viewHeight) / 2,
       viewLeft: (document.documentElement.clientWidth - this.viewWidth) / 2
     }
@@ -309,14 +309,16 @@ class App extends React.Component {
     // Adjusts the location so the paddle is held in the middle
     let paddleTopToMiddle = this.paddleDims.height / 2 * this.dR,
         click = event.clientY - paddleTopToMiddle;
+        console.log(this.state.viewTop)
     return (click - this.state.viewTop) / this.dR
+    
   }
   handleMouseMove = event => {
     if (this.state.isMouseDown === true) {
        if (this.state.selectedPlayer === "player") { 
-        let clickOnBoard = this.relClickPos()
+        let clickOnBoard = this.relClickPos(event)
         // Stop wall collision
-        this.paddleWallCollision(clickOnBoard);
+        clickOnBoard = this.paddleWallCollision(clickOnBoard);
         this.setState({
           playerLoc: { 
             x: 2,
@@ -324,20 +326,21 @@ class App extends React.Component {
           } 
         });
         }
-      }
       else if (this.state.selectedPlayer === "enemy") { 
-        let clickOnBoard = this.relClickPos()
+        let clickOnBoard = this.relClickPos(event)
         // Stop wall collision
-        this.paddleWallCollision(clickOnBoard)
+        console.log('logged')
+        clickOnBoard = this.paddleWallCollision(clickOnBoard);
         this.setState({
           enemyLoc: { 
-            x: this.maxX- this.paddleDims.width - 2,
+            x: this.maxX - this.paddleDims.width - 2,
             y: clickOnBoard
           } 
         });
       }
     event.stopPropagation()
     event.preventDefault()
+    }
   }
 
   render() {
