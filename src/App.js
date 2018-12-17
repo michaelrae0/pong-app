@@ -1,8 +1,8 @@
 import React from 'react';
 import './index.css';
-import Paddle from './Paddle.js';
-import Ball from './Ball.js';
-import Score from './Score.js';
+import Paddle from './App/Paddle.js';
+import Ball from './App/Ball.js';
+import Score from './App/Score.js';
 
 class App extends React.Component {
   constructor(props) {
@@ -178,11 +178,12 @@ class App extends React.Component {
       x: this.maxX/2 - this.ballDims.height/2,
       y: this.maxY/2 - this.ballDims.width/2
     },
-      initDeg = 140 - Math.random() * 60,
+      initDeg = 120 - Math.random() * 60,
       nextBallVel = this.randomBallDir(initDeg);
     this.setState({
       ballVel: nextBallVel,
-      ballLoc: nextBallLoc
+      ballLoc: nextBallLoc,
+      wallHit: ""
     });
   }
   newScore = () => {
@@ -198,7 +199,13 @@ class App extends React.Component {
       score: { playerS, enemyS }
     })
   }
-
+  randomBallDir = initDeg => {
+    return {
+      x: Math.sin(Math.PI/180 * initDeg) * 1.8,
+      y: Math.cos(Math.PI/180 * initDeg) * 1.8,
+    }
+  }
+  
   paddleMovement = () => {
     const initX       = this.maxX * 0.5,                   // When the ball passes this, the balls become autonomous
         relEnemyLoc   = this.state.ballLoc.x - initX, // The relative locations of the balls from initx
@@ -248,13 +255,6 @@ class App extends React.Component {
       this.ballNoCollision();
     }
   } 
-  
-  randomBallDir = initDeg => {
-    return {
-      x: Math.sin(Math.PI/180 * initDeg) * 1.8,
-      y: Math.cos(Math.PI/180 * initDeg) * 1.8,
-    }
-  }
 
   nextFrame = () => {
     this.paddleMovement();
