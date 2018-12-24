@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js");
 
 importScripts(
-  "/pong-app/precache-manifest.8c256398d358dd0d73aaa2987175443c.js"
+  "/pong-app/precache-manifest.93dbb5bfd74168627e5084f947ccec52.js"
 );
 
 workbox.clientsClaim();
