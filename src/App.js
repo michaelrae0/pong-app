@@ -7,25 +7,13 @@ import Score from './App/Score.js';
 class App extends React.Component {
   constructor(props) {
     super(props);
-    // To keep track of original dimensions
-    this.viewWidth     = 840;
-    this.viewHeight    = 600;
 
     this.paddleDims    = { height: 14, width: 1.5 };
     this.ballDims      = { height: 2, width: 2 };
 
-    this.dR            = this.viewHeight / 100;
     this.maxX          = 140;
     this.maxY          = 100;
-    // if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
-    //   viewWidth     = 336;
-    //   viewHeight    = 240;
-    //   viewLeft      = (clientWidth  - viewWidth) / 2;
-    //   viewTop       = (clientHeight - viewHeight) / 2;
-    //   dR            = viewHeight/100;
-    //   this.paddleDims    = { height: 20, width: 3};
-    //   ballDims      = { height: 3, width: 3};
-    // }
+
 
     this.state = {
       // Player is the left paddle, Enemy is the right paddle
@@ -37,7 +25,7 @@ class App extends React.Component {
                     },
 
       playerV:      0,
-      ballVel:      this.randomBallDir(115 - Math.random() * 65),
+      ballVel:      this.randomBallDir(),
 
       score:        { playerS: 0, enemyS: 0 },
       lastHit:      "",
@@ -45,10 +33,36 @@ class App extends React.Component {
       isMouseDown:  false,
       selectedPlayer: "",
       // viewport dimensions
-      viewTop: (document.documentElement.clientHeight - this.viewHeight) / 2,
-      viewLeft: (document.documentElement.clientWidth - this.viewWidth) / 2
+      viewDims: this.calculateViewDimensions(),
     }
   }
+
+  calculateViewDimensions = () => {
+    let clientHeight = document.documentElement.clientHeight;
+    let clientWidth = document.documentElement.clientWidth;
+
+    let viewWidth = 840;
+    let viewHeight = 600;
+    
+    if (clientWidth < 840 || clientHeight < 600) {
+      if (clientWidth < clientHeight * 8.4/6) {
+        viewHeight = clientWidth * 6/8.4;
+        viewWidth = clientWidth;
+      } else {
+        viewWidth = clientHeight * 8.4/6;
+        viewHeight = clientHeight;
+      }
+    }
+
+    return {
+      viewWidth,
+      viewHeight,
+      viewTop: (document.documentElement.clientHeight - viewHeight) / 2,
+      viewLeft: (document.documentElement.clientWidth - viewWidth) / 2,
+      dR: viewHeight / 100,
+    }
+  }
+
   autoLocation = (relLoc, paddleStr, initPadLoc) => {
     let initX   = this.maxX * 0.5,  // Where v starts to change
         deltaV  = 0.8,        // maximum add to this.state.enemyLoc
@@ -101,6 +115,7 @@ class App extends React.Component {
     else if (nextY > this.maxY - 0.5 - this.paddleDims.height) return this.maxY - 0.5 - this.paddleDims.height;
     else return nextY;
   }
+
   ballPaddleCollision = (paddleStr, initPadLoc) => {
     let deltaY        = this.paddleDims.height + this.ballDims.height,
         deltaDeg      = 120, // Ball can shoot at a max angle of 70 deg from either side
@@ -173,13 +188,14 @@ class App extends React.Component {
       ballLoc: nextBallLoc
     })
   }
+
   newBall = () => {
     let nextBallLoc = {
       x: this.maxX/2 - this.ballDims.height/2,
       y: this.maxY/2 - this.ballDims.width/2
     },
-      initDeg = 120 - Math.random() * 60,
-      nextBallVel = this.randomBallDir(initDeg);
+      nextBallVel = this.randomBallDir();
+
     this.setState({
       ballVel: nextBallVel,
       ballLoc: nextBallLoc,
@@ -199,7 +215,9 @@ class App extends React.Component {
       score: { playerS, enemyS }
     })
   }
-  randomBallDir = initDeg => {
+  randomBallDir = () => {
+    let initDeg = 120 - Math.random() * 60;
+
     return {
       x: Math.sin(Math.PI/180 * initDeg) * 1.8,
       y: Math.cos(Math.PI/180 * initDeg) * 1.8,
@@ -262,8 +280,7 @@ class App extends React.Component {
 
     this.setState({
       // Update for mouse calculations if screen changed size
-      viewTop: (document.documentElement.clientHeight - this.viewHeight) / 2,
-      viewLeft: (document.documentElement.clientWidth - this.viewWidth) / 2
+      viewDims: this.calculateViewDimensions(),
     })
   }
 
@@ -276,10 +293,10 @@ class App extends React.Component {
 
   handleMouseDown = event => {
     if (
-      event.clientY >= this.state.viewTop + this.state.playerLoc.y * this.dR &&                                   // top
-      event.clientY <= this.state.viewTop + (this.state.playerLoc.y + this.paddleDims.height) * this.dR &&  // bottom
-      event.clientX >= this.state.viewLeft + (this.state.playerLoc.x - 2) * this.dR &&                            // left
-      event.clientX <= this.state.viewLeft + (this.state.playerLoc.x + this.paddleDims.width + 2) * this.dR // right
+      event.clientY >= this.state.viewDims.viewTop + this.state.playerLoc.y * this.state.viewDims.dR &&                                   // top
+      event.clientY <= this.state.viewDims.viewTop + (this.state.playerLoc.y + this.paddleDims.height) * this.state.viewDims.dR &&  // bottom
+      event.clientX >= this.state.viewDims.viewLeft + (this.state.playerLoc.x - 2) * this.state.viewDims.dR &&                            // left
+      event.clientX <= this.state.viewDims.viewLeft + (this.state.playerLoc.x + this.paddleDims.width + 2) * this.state.viewDims.dR // right
     ) {
       this.setState({
         isMouseDown: true,
@@ -287,10 +304,10 @@ class App extends React.Component {
       })
     }
     else if (
-      event.clientY >= this.state.viewTop + this.state.enemyLoc.y * this.dR &&                                    // top
-      event.clientY <= this.state.viewTop + (this.state.enemyLoc.y + this.paddleDims.height) * this.dR &&   // bottom
-      event.clientX >= this.state.viewLeft + (this.state.enemyLoc.x - 2) * this.dR &&                             // left
-      event.clientX <= this.state.viewLeft + (this.state.enemyLoc.x + this.paddleDims.width + 2) * this.dR  // right
+      event.clientY >= this.state.viewDims.viewTop + this.state.enemyLoc.y * this.state.viewDims.dR &&                                    // top
+      event.clientY <= this.state.viewDims.viewTop + (this.state.enemyLoc.y + this.paddleDims.height) * this.state.viewDims.dR &&   // bottom
+      event.clientX >= this.state.viewDims.viewLeft + (this.state.enemyLoc.x - 2) * this.state.viewDims.dR &&                             // left
+      event.clientX <= this.state.viewDims.viewLeft + (this.state.enemyLoc.x + this.paddleDims.width + 2) * this.state.viewDims.dR  // right
     ) {
       this.setState({
         isMouseDown: true,
@@ -307,10 +324,9 @@ class App extends React.Component {
   }
   relClickPos = event => { 
     // Adjusts the location so the paddle is held in the middle
-    let paddleTopToMiddle = this.paddleDims.height / 2 * this.dR,
+    let paddleTopToMiddle = this.paddleDims.height / 2 * this.state.viewDims.dR,
         click = event.clientY - paddleTopToMiddle;
-        console.log(this.state.viewTop)
-    return (click - this.state.viewTop) / this.dR
+    return (click - this.state.viewDims.viewTop) / this.state.viewDims.dR
     
   }
   handleMouseMove = event => {
@@ -329,7 +345,6 @@ class App extends React.Component {
       else if (this.state.selectedPlayer === "enemy") { 
         let clickOnBoard = this.relClickPos(event)
         // Stop wall collision
-        console.log('logged')
         clickOnBoard = this.paddleWallCollision(clickOnBoard);
         this.setState({
           enemyLoc: { 
@@ -349,10 +364,10 @@ class App extends React.Component {
         className     ="viewport lock-screen"
         tabIndex      ="0"
         style         ={{
-                        width: this.viewWidth,
-                        height: this.viewHeight,
-                        top: this.state.viewTop,
-                        left: this.state.viewLeft
+                        width: this.state.viewDims.viewWidth,
+                        height: this.state.viewDims.viewHeight,
+                        top: this.state.viewDims.viewTop,
+                        left: this.state.viewDims.viewLeft
         }}
         onMouseDown   ={this.handleMouseDown}
         onMouseUp     ={this.handleMouseUp}
@@ -364,24 +379,24 @@ class App extends React.Component {
         <Ball
           loc   ={this.state.ballLoc}
           dims  ={this.ballDims}
-          dR    ={this.dR}
+          dR    ={this.state.viewDims.dR}
         />
         <Paddle
           id    ="player"
           loc   ={this.state.playerLoc}
           dims  ={this.paddleDims}
-          dR    ={this.dR}
-          span  ={this.state.viewTop}
+          dR    ={this.state.viewDims.dR}
+          span  ={this.state.viewDims.viewTop}
         />
         <Paddle 
           id    ="enemy"
           loc   ={this.state.enemyLoc}
           dims  ={this.paddleDims}
-          dR    ={this.dR}
+          dR    ={this.state.viewDims.dR}
         />
         <Score 
           count ={this.state.score} 
-          dR    ={this.dR}
+          dR    ={this.state.viewDims.dR}
         />
       </div>
     );

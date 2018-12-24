@@ -9,7 +9,10 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background: white;
+  margin: 0 auto;
+  overflow: hidden;
 }
+
 .container {
   height: 100%;
   width: 100%;
@@ -20,6 +23,7 @@ body {
 .viewport {
   background-color: black;
   position: absolute;
+  margin: 0auto;
 }
 .paddle {
   background-color: white;
@@ -39,7 +43,7 @@ body {
 .board-num {
   position: absolute;
   color: white;
-  font-size: 80px;
+  font-size: 5vw; /*5*/
   font-family: 'digital';
   float: left;
   width: 84px;
