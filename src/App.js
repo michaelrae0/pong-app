@@ -37,6 +37,7 @@ class App extends React.Component {
     }
   }
 
+  // Change view dimensions dynamically
   calculateViewDimensions = () => {
     let clientHeight = document.documentElement.clientHeight;
     let clientWidth = document.documentElement.clientWidth;
@@ -63,8 +64,9 @@ class App extends React.Component {
     }
   }
 
+  // Automove if paddle is not selected
   autoLocation = (relLoc, paddleStr, initPadLoc) => {
-    let initX   = this.maxX * 0.5,  // Where v starts to change
+    let initX   = this.maxX * 0.5,  // Where v will start to change
         deltaV  = 0.8,        // maximum add to this.state.enemyLoc
         deltaX  = this.maxX - 100, // linear scale
         vo      = 0.7,
@@ -110,12 +112,14 @@ class App extends React.Component {
     }
     return initPadLoc;
   }
+  // Paddle collison test
   paddleWallCollision = nextY => {
-    if (nextY < 0.5)  return 0.5;
-    else if (nextY > this.maxY - 0.5 - this.paddleDims.height) return this.maxY - 0.5 - this.paddleDims.height;
+    if (nextY < 0.5)  return 0.5; // Stop at top wall
+    else if (nextY > this.maxY - 0.5 - this.paddleDims.height) return this.maxY - 0.5 - this.paddleDims.height; // Stop at bottom wall
     else return nextY;
   }
 
+  // Ball collision tests
   ballPaddleCollision = (paddleStr, initPadLoc) => {
     let deltaY        = this.paddleDims.height + this.ballDims.height,
         deltaDeg      = 120, // Ball can shoot at a max angle of 70 deg from either side
@@ -151,10 +155,12 @@ class App extends React.Component {
     })
   }
   ballWallCollision = () => {    
+    // reverse y direction
     let nextBallVel = {
       x: this.state.ballVel.x,
       y: -this.state.ballVel.y
     }
+    // continue 
     let nextBallLoc = {
       x: this.state.ballLoc.x + this.state.ballVel.x,
       y: this.state.ballLoc.y + this.state.ballVel.y
@@ -163,6 +169,7 @@ class App extends React.Component {
       ballVel: nextBallVel,
       ballLoc: nextBallLoc
     })
+
     // Fixes a glitch where the ball hits a paddle and wall at the same time
     if (this.state.ballLoc.y <= 0) {
       this.setState({
@@ -189,6 +196,7 @@ class App extends React.Component {
     })
   }
 
+  // Ball spawns
   newBall = () => {
     let nextBallLoc = {
       x: this.maxX/2 - this.ballDims.height/2,
@@ -205,25 +213,34 @@ class App extends React.Component {
   newScore = () => {
     let playerS = this.state.score.playerS,
         enemyS  = this.state.score.enemyS;
+    
     if (this.state.ballLoc.x <= 0) {
       enemyS++;
     } else {
       playerS++
     }
+
     this.setState({
       lastHit: "",
       score: { playerS, enemyS }
     })
   }
   randomBallDir = () => {
+    // degree
     let initDeg = 120 - Math.random() * 60;
+    
+    // left or right
+    let arr = [-1, 1]
+    let element = Math.floor(Math.random() * 2);
+    let direction = arr[element];
 
     return {
-      x: Math.sin(Math.PI/180 * initDeg) * 1.8,
+      x: direction * Math.sin(Math.PI/180 * initDeg) * 1.8,
       y: Math.cos(Math.PI/180 * initDeg) * 1.8,
     }
   }
   
+  // Movements; call collision tests
   paddleMovement = () => {
     const initX       = this.maxX * 0.5,                   // When the ball passes this, the balls become autonomous
         relEnemyLoc   = this.state.ballLoc.x - initX, // The relative locations of the balls from initx
@@ -274,6 +291,7 @@ class App extends React.Component {
     }
   } 
 
+
   nextFrame = () => {
     this.paddleMovement();
     this.ballMovement();
@@ -292,10 +310,12 @@ class App extends React.Component {
   }
 
   handleMouseDown = event => {
+    // Detect if player clicked on a paddle, with extra breathing room
+    // If yes, enable mousemove handle
     if (
-      event.clientY >= this.state.viewDims.viewTop + this.state.playerLoc.y * this.state.viewDims.dR &&                                   // top
+      event.clientY >= this.state.viewDims.viewTop + this.state.playerLoc.y * this.state.viewDims.dR &&                             // top
       event.clientY <= this.state.viewDims.viewTop + (this.state.playerLoc.y + this.paddleDims.height) * this.state.viewDims.dR &&  // bottom
-      event.clientX >= this.state.viewDims.viewLeft + (this.state.playerLoc.x - 2) * this.state.viewDims.dR &&                            // left
+      event.clientX >= this.state.viewDims.viewLeft + (this.state.playerLoc.x - 2) * this.state.viewDims.dR &&                      // left
       event.clientX <= this.state.viewDims.viewLeft + (this.state.playerLoc.x + this.paddleDims.width + 2) * this.state.viewDims.dR // right
     ) {
       this.setState({
@@ -304,9 +324,9 @@ class App extends React.Component {
       })
     }
     else if (
-      event.clientY >= this.state.viewDims.viewTop + this.state.enemyLoc.y * this.state.viewDims.dR &&                                    // top
+      event.clientY >= this.state.viewDims.viewTop + this.state.enemyLoc.y * this.state.viewDims.dR &&                              // top
       event.clientY <= this.state.viewDims.viewTop + (this.state.enemyLoc.y + this.paddleDims.height) * this.state.viewDims.dR &&   // bottom
-      event.clientX >= this.state.viewDims.viewLeft + (this.state.enemyLoc.x - 2) * this.state.viewDims.dR &&                             // left
+      event.clientX >= this.state.viewDims.viewLeft + (this.state.enemyLoc.x - 2) * this.state.viewDims.dR &&                       // left
       event.clientX <= this.state.viewDims.viewLeft + (this.state.enemyLoc.x + this.paddleDims.width + 2) * this.state.viewDims.dR  // right
     ) {
       this.setState({
@@ -317,6 +337,7 @@ class App extends React.Component {
     }
   }
   handleMouseUp = event => {
+    //disable mousemove handle
     this.setState({
       isMouseDown: false,
       selectedPlayer: ""
@@ -361,21 +382,19 @@ class App extends React.Component {
   render() {
     return (
       <div
-        className     ="viewport lock-screen"
-        tabIndex      ="0"
-        style         ={{
-                        width: this.state.viewDims.viewWidth,
-                        height: this.state.viewDims.viewHeight,
-                        top: this.state.viewDims.viewTop,
-                        left: this.state.viewDims.viewLeft
+        className  ="viewport lock-screen"
+        tabIndex   ="0"
+        style ={{
+          width: this.state.viewDims.viewWidth,
+          height: this.state.viewDims.viewHeight,
+          top: this.state.viewDims.viewTop,
+          left: this.state.viewDims.viewLeft
         }}
         onMouseDown   ={this.handleMouseDown}
         onMouseUp     ={this.handleMouseUp}
         onMouseMove   ={this.handleMouseMove}
-        onTouchStart  ={this.handleMouseDown}
-        onTouchEnd    ={this.handleMouseUp}
-        onTouchMove   ={this.handleMouseMove}
       >
+
         <Ball
           loc   ={this.state.ballLoc}
           dims  ={this.ballDims}
@@ -398,6 +417,7 @@ class App extends React.Component {
           count ={this.state.score} 
           dR    ={this.state.viewDims.dR}
         />
+        
       </div>
     );
   }

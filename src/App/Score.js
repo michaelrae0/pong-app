@@ -6,18 +6,20 @@ class Score extends React.Component {
       <div className="scoreboard" >
         <div
           key="score1"
-          className="board-num one"
+          className="board-num"
           style={{
-            left: 35 * this.props.dR - 21 + 'px'
+            left: 28 + '%',
+            fontSize: 15 * this.props.dR
           }}
         >
           {this.props.count.playerS}
         </div>
         <div
           key="score2"
-          className="board-num two"
+          className="board-num"
           style={{
-            left: 105 * this.props.dR - 21 + 'px'
+            left: 65 + '%',
+            fontSize: 15 * this.props.dR
           }}
         >
           {this.props.count.enemyS}
