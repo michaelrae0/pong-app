@@ -14,7 +14,6 @@ class App extends React.Component {
     this.maxX          = 140;
     this.maxY          = 100;
 
-
     this.state = {
       // Player is the left paddle, Enemy is the right paddle
       playerLoc:    {x: 2, y: this.maxY/2 - this.paddleDims.height/2}, 
@@ -45,6 +44,7 @@ class App extends React.Component {
     let viewWidth = 840;
     let viewHeight = 600;
     
+    // Scale down viewport if screen isn't big enough
     if (clientWidth < 840 || clientHeight < 600) {
       if (clientWidth < clientHeight * 8.4/6) {
         viewHeight = clientWidth * 6/8.4;
