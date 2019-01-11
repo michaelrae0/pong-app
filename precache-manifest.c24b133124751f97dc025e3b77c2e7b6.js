@@ -1,11 +1,11 @@
 self.__precacheManifest = [
   {
-    "revision": "4f6ac746e64bf781b10f",
-    "url": "/pong-app/static/css/main.e266a19c.chunk.css"
+    "revision": "f468b7bbb17c75cd5713",
+    "url": "/pong-app/static/css/main.66d48444.chunk.css"
   },
   {
-    "revision": "4f6ac746e64bf781b10f",
-    "url": "/pong-app/static/js/main.4f6ac746.chunk.js"
+    "revision": "f468b7bbb17c75cd5713",
+    "url": "/pong-app/static/js/main.f468b7bb.chunk.js"
   },
   {
     "revision": "f4bb04f8a4ae323e35e0",
@@ -20,7 +20,7 @@ self.__precacheManifest = [
     "url": "/pong-app/static/media/digital_counter_7.52a6484f.ttf"
   },
   {
-    "revision": "abdf6912523936d1fd6938d33d8d5698",
+    "revision": "3575a7a6ac1d264a0830847cb586ae09",
     "url": "/pong-app/index.html"
   }
 ];
