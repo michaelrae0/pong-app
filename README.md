@@ -1,6 +1,6 @@
 # pong-app
 
-![alt text](https://github.com/michaelrae0/pong-app/tree/master/src/images/preview.jpg)
+![preview](https://github.com/michaelrae0/pong-app/blob/master/src/images/preview.JPG)
 
 https://michaelrae0.github.io/pong-app/
 
